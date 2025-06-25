@@ -7,19 +7,246 @@
   
   :root {
     --primary-color: #3498db;
+    --secondary-color: #2ecc71;
     --text-color: #333;
-    --light-gray: #f5f5f5;
+    --light-gray: rgba(245, 245, 245, 0.9);
+    --dark-gray: #777;
+    --content-bg: rgba(255, 255, 255, 0.85);
   }
   
   body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
     color: var(--text-color);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: url('/public/img/background.jpg') no-repeat center center fixed;
+    background-size: cover;
+  }
+
+  /* 添加遮罩层确保文字可读性 */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.3);
+    z-index: -1;
   }
   
   .container {
     width: 90%;
     max-width: 1200px;
-    margin: 0 auto;
+    margin: 2rem auto;
+    padding: 2rem;
+    flex: 1;
+    background-color: var(--content-bg);
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+
+  /* 头部样式 */
+  .site-header {
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 5%;
+  }
+
+  .logo a {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    text-decoration: none;
+  }
+
+  .main-nav ul {
+    display: flex;
+    list-style: none;
+  }
+
+  .main-nav li {
+    margin-left: 2rem;
+  }
+
+  .main-nav a {
+    text-decoration: none;
+    color: var(--text-color);
+    font-weight: 500;
+    transition: color 0.3s;
+  }
+
+  .main-nav a:hover,
+  .main-nav a.active {
+    color: var(--primary-color);
+  }
+
+  .mobile-menu-btn {
+    display: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+  }
+
+  /* 页脚样式 */
+  .site-footer {
+    background-color: var(--light-gray);
     padding: 2rem 0;
+    margin-top: 2rem;
+  }
+
+  .footer-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+
+  .footer-section {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .footer-section h3 {
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+  }
+
+  .footer-section ul {
+    list-style: none;
+  }
+
+  .footer-section li {
+    margin-bottom: 0.5rem;
+  }
+
+  .footer-section a {
+    text-decoration: none;
+    color: var(--text-color);
+    transition: color 0.3s;
+  }
+
+  .footer-section a:hover {
+    color: var(--primary-color);
+  }
+
+  .contact-info i {
+    margin-right: 0.5rem;
+    color: var(--primary-color);
+  }
+
+  .social-links {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .social-links a {
+    font-size: 1.2rem;
+  }
+
+  .copyright {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #ddd;
+    color: var(--dark-gray);
+  }
+
+  /* 关于页面样式 */
+  .about-section h1 {
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+  }
+
+  .about-content {
+    margin-bottom: 3rem;
+  }
+
+  .about-content h2 {
+    margin: 1.5rem 0 1rem;
+    color: var(--secondary-color);
+  }
+
+  .values-list {
+    list-style: none;
+    margin-top: 1rem;
+  }
+
+  .values-list li {
+    margin-bottom: 0.5rem;
+  }
+
+  .values-list i {
+    color: var(--secondary-color);
+    margin-right: 0.5rem;
+  }
+
+  .team-showcase h2 {
+    margin-bottom: 2rem;
+    color: var(--primary-color);
+  }
+
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 2rem;
+  }
+
+  .team-member {
+    text-align: center;
+  }
+
+  .member-photo {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    background-color: var(--light-gray);
+  }
+
+  /* 响应式设计 */
+  @media (max-width: 768px) {
+    .main-nav {
+      position: fixed;
+      top: 70px;
+      left: 0;
+      width: 100%;
+      background-color: white;
+      box-shadow: 0 5px 5px rgba(0,0,0,0.1);
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+    }
+
+    .main-nav.show {
+      max-height: 300px;
+    }
+
+    .main-nav ul {
+      flex-direction: column;
+      padding: 1rem;
+    }
+
+    .main-nav li {
+      margin: 0.5rem 0;
+    }
+
+    .mobile-menu-btn {
+      display: block;
+    }
+
+    .footer-container {
+      flex-direction: column;
+    }
   }

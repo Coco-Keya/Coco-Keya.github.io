@@ -6,6 +6,11 @@ document.addEventListener('DOMContentLoaded', () => {
       .then(html => {
         document.getElementById('header').innerHTML = html;
         setActiveNav();
+        initMobileMenu();
+      })
+      .catch(err => {
+        console.error('加载页头失败:', err);
+        document.getElementById('header').innerHTML = '<div class="error">导航加载失败</div>';
       });
   
     // 加载页脚
@@ -13,6 +18,10 @@ document.addEventListener('DOMContentLoaded', () => {
       .then(res => res.text())
       .then(html => {
         document.getElementById('footer').innerHTML = html;
+      })
+      .catch(err => {
+        console.error('加载页脚失败:', err);
+        document.getElementById('footer').innerHTML = '<div class="error">页脚加载失败</div>';
       });
   });
   
@@ -24,4 +33,27 @@ document.addEventListener('DOMContentLoaded', () => {
         link.classList.add('active');
       }
     });
+  }
+
+  // 初始化移动端菜单功能
+  function initMobileMenu() {
+    const menuBtn = document.querySelector('.mobile-menu-btn');
+    const nav = document.querySelector('.main-nav');
+    
+    if (menuBtn && nav) {
+      menuBtn.addEventListener('click', () => {
+        nav.classList.toggle('show');
+        menuBtn.querySelector('i').classList.toggle('fa-times');
+        menuBtn.querySelector('i').classList.toggle('fa-bars');
+      });
+      
+      // 点击菜单项后自动关闭菜单
+      document.querySelectorAll('.main-nav a').forEach(link => {
+        link.addEventListener('click', () => {
+          nav.classList.remove('show');
+          menuBtn.querySelector('i').classList.add('fa-bars');
+          menuBtn.querySelector('i').classList.remove('fa-times');
+        });
+      });
+    }
   }
