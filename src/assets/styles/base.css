@@ -50,7 +50,7 @@
 
   /* 头部样式 */
   .site-header {
-    background-color: white;
+    background-color: rgba(255, 255, 255, 0.729);
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     position: sticky;
     top: 0;
@@ -213,6 +213,35 @@
     margin: 0 auto 1rem;
     border-radius: 50%;
     background-color: var(--light-gray);
+  }
+
+  /* 打字机动画样式 */
+  @keyframes typing {
+    from { width: 0 }
+    to { width: 100% }
+  }
+
+  @keyframes blink-caret {
+    from, to { border-color: transparent }
+    50% { border-color: var(--primary-color) }
+  }
+
+  .typewriter {
+    overflow: hidden;
+    border-right: 3px solid var(--primary-color);
+    white-space: nowrap;
+    animation: 
+      typing 3.5s steps(40, end),
+      blink-caret 0.75s step-end infinite;
+  }
+
+  @keyframes gentle-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .blink-after-typing {
+    animation: gentle-blink 2s ease-in-out infinite !important;
   }
 
   /* 响应式设计 */

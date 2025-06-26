@@ -1,7 +1,7 @@
 // 动态加载组件
 document.addEventListener('DOMContentLoaded', () => {
     // 加载页头
-    fetch('../components/header.html')
+    fetch('/src/components/header.html')
       .then(res => res.text())
       .then(html => {
         document.getElementById('header').innerHTML = html;
@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   
     // 加载页脚
-    fetch('../components/footer.html')
+    fetch('/src/components/footer.html')
       .then(res => res.text())
       .then(html => {
         document.getElementById('footer').innerHTML = html;
@@ -57,3 +57,31 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   }
+
+  // 链接窗口管理功能
+  function manageLinkWindows() {
+    document.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', function(e) {
+        if (this.hostname === window.location.hostname && 
+            !this.hasAttribute('target') && 
+            this.getAttribute('href') !== '#') {
+          e.preventDefault();
+          const url = this.href;
+          const windowName = 'window_' + encodeURIComponent(url);
+          
+          // 尝试聚焦已有窗口或打开新窗口
+          const existingWindow = window.open('', windowName);
+          if (existingWindow && existingWindow.location.href === url) {
+            existingWindow.focus();
+          } else {
+            window.open(url, windowName);
+          }
+        }
+      });
+    });
+  }
+
+  // 在DOM加载完成后初始化链接管理
+  document.addEventListener('DOMContentLoaded', () => {
+    manageLinkWindows();
+  });

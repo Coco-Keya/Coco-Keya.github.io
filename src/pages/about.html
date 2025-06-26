@@ -3,55 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>关于我们 - 我的网站</title>
+    <title>关于柯迓Keya</title>
+    <!-- Favicon -->
+    <link rel="icon" href="/public/img/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="/src/assets/styles/base.css">
     <link rel="stylesheet" href="/src/assets/styles/layout.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .profile-header {
+            text-align: center;
+            padding: 40px 0;
+            background-color: #f8f9fa;
+        }
+        .profile-avatar {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .profile-name {
+            font-size: 2.5rem;
+            margin: 10px 0;
+            color: #333;
+        }
+        .profile-title {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .about-section {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .skill-item {
+            background-color: #1ec09729;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        #english-quote {
+            text-align: center;
+            font-style: italic;
+            margin: 20px 0;
+            font-size: 1.5rem;
+            color: #1e54f6;
+            word-wrap: break-word;
+            word-break: break-word;
+            white-space: normal;
+            max-width: 1000%;
+        }
+    </style>
 </head>
 <body>
     <div id="header"></div>
 
     <main class="container">
+        <div class="profile-header">
+            <img src="/public/img/头像.png" alt="柯迓Keya" class="profile-avatar">
+            <h1 class="profile-name">柯迓Keya</h1>
+            <p class="profile-title">一个平凡的普通人 (‾◡◝)</p>
+        </div>
+
         <section class="about-section">
-            <h1>关于我们</h1>
-            <p>欢迎了解我们的故事和使命</p>
+            <h2 class="section-title">关于我</h2>
+            <p>喜欢看番，游戏，要和我一起吗？（。＾▽＾）</p>
             
-            <article class="about-content">
-                <h2>我们的故事</h2>
-                <p>成立于2023年，我们致力于提供高质量的网站开发服务。从一个小型工作室开始，我们已经成长为拥有10名专业开发人员的团队。</p>
+            <h2 class="section-title">兴趣</h2>
+            <div class="skills-list">
+                <span class="skill-item">loli</span>
+                <span class="skill-item">少女</span>
+                <span class="skill-item">JK</span>
+            </div>
+
+            <h2 class="section-title">一些话</h2>
+            <div class="experience-item">
+                <p>你知道的，我是纯爱 (๑•̀ㅂ•́)و✧</p><br>
                 
-                <h2>我们的使命</h2>
-                <p>通过创新的技术和卓越的设计，帮助客户在数字世界中脱颖而出。</p>
-                
-                <h2>我们的价值观</h2>
-                <ul class="values-list">
-                    <li><i class="fas fa-check"></i> 客户至上</li>
-                    <li><i class="fas fa-check"></i> 追求卓越</li>
-                    <li><i class="fas fa-check"></i> 持续创新</li>
-                    <li><i class="fas fa-check"></i> 团队合作</li>
-                </ul>
-            </article>
-            
-            <div class="team-showcase">
-                <h2>核心团队</h2>
-                <div class="team-grid">
-                    <div class="team-member">
-                        <div class="member-photo"></div>
-                        <h3>张伟</h3>
-                        <p>创始人 & CEO</p>
-                    </div>
-                    <div class="team-member">
-                        <div class="member-photo"></div>
-                        <h3>李娜</h3>
-                        <p>技术总监</p>
-                    </div>
-                </div>
+                <p id="english-quote" data-typewriter data-blink="true" data-speed="10"></p>
             </div>
         </section>
-    </div>
+    </main>
 
     <div id="footer"></div>
     
+    <script>
+        // Fetch English quote from API
+        fetch('https://v.api.aa1.cn/api/api-wenan-yingwen/index.php?type=json')
+            .then(response => response.json())
+            .then(data => {
+                const quoteElement = document.getElementById('english-quote');
+                quoteElement.textContent = data.text;
+                // 手动触发打字机动画
+                if (window.typewriter) {
+                    window.typewriter.animate(quoteElement, 20, 0, true, true);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching quote:', error);
+                const quoteElement = document.getElementById('english-quote');
+                quoteElement.textContent = 'Everything in excess is opposed to nature.';
+                if (window.typewriter) {
+                    window.typewriter.animate(quoteElement, 20, 0, true, true);
+                }
+            });
+    </script>
     <script src="/src/scripts/main.js"></script>
+    <!-- 加载可选功能脚本 -->
+    <script src="/src/scripts/optional.js"></script>
 </body>
 </html>
