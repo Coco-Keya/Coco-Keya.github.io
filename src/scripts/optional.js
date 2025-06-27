@@ -116,6 +116,124 @@ function generateLightPastelColor() {
     return `linear-gradient(135deg, rgba(${r}, ${g}, ${b}, ${alpha1}), rgba(${r}, ${g}, ${b}, ${alpha2}))`;
 }
 
+/**
+ * 鼠标拖尾特效
+ * @param {number} trailCount - 拖尾元素数量
+ * @param {number} trailSize - 拖尾元素大小(px)
+ * @param {number} trailDistance - 拖尾元素间距(px)
+ */
+function initMouseTrail(trailCount = 8, trailSize = 20, trailDistance = 14) {
+  const trailElements = [];
+  
+  // 创建拖尾元素
+  for (let i = 0; i < trailCount; i++) {
+    const el = document.createElement('div');
+    el.className = 'mouse-trail';
+    el.style.width = `${trailSize}px`;
+    el.style.height = `${trailSize}px`;
+    el.style.position = 'fixed';
+    el.style.borderRadius = '50%';
+    el.style.pointerEvents = 'none';
+    el.style.transform = 'translate(-50%, -50%)';
+    el.style.transition = `opacity 0.3s, transform 0.3s`;
+    el.style.opacity = '0';
+    document.body.appendChild(el);
+    trailElements.push(el);
+  }
+  
+  let mouseX = 0;
+  let mouseY = 0;
+  let lastMouseX = 0;
+  let lastMouseY = 0;
+  let trailPositions = Array(trailCount).fill({ x: 0, y: 0 });
+  let isMoving = false;
+  
+  // 鼠标移动事件
+  document.addEventListener('mousemove', (e) => {
+    // 检测鼠标是否真正移动(超过5px阈值)
+    if (Math.abs(e.clientX - lastMouseX) > 5 || Math.abs(e.clientY - lastMouseY) > 5) {
+      isMoving = true;
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      lastMouseX = e.clientX;
+      lastMouseY = e.clientY;
+    } else {
+      isMoving = false;
+    }
+  });
+  
+  // 动画循环
+  function animate() {
+    // 更新拖尾元素位置
+    trailPositions = trailPositions.map((pos, i) => {
+      const targetX = i === 0 ? mouseX : trailPositions[i - 1].x;
+      const targetY = i === 0 ? mouseY : trailPositions[i - 1].y;
+      
+      const dx = targetX - pos.x;
+      const dy = targetY - pos.y;
+      
+      return {
+        x: pos.x + dx * 0.2,
+        y: pos.y + dy * 0.2
+      };
+    });
+    
+    // 应用位置和样式
+    trailElements.forEach((el, i) => {
+      const pos = trailPositions[i];
+      const distance = Math.sqrt(
+        Math.pow(pos.x - mouseX, 2) + 
+        Math.pow(pos.y - mouseY, 2)
+      );
+      
+      el.style.left = `${pos.x}px`;
+      el.style.top = `${pos.y}px`;
+      // 根据鼠标移动状态设置透明度
+      const baseOpacity = isMoving ? 0.8 : 0;
+      el.style.opacity = `${baseOpacity - (i / trailCount) * 0.6}`;
+      el.style.background = generateLightPastelColor();
+      el.style.transform = `translate(-50%, -50%) scale(${1.2 - (i / trailCount) * 0.4})`;
+    });
+    
+    requestAnimationFrame(animate);
+  }
+  
+  animate();
+}
+
+/**
+ * 鼠标点击特效
+ */
+function initMouseClickEffect() {
+  document.addEventListener('click', (e) => {
+    const el = document.createElement('div');
+    el.className = 'mouse-click';
+    el.style.position = 'fixed';
+    el.style.left = `${e.clientX}px`;
+    el.style.top = `${e.clientY}px`;
+    el.style.width = '40px';
+    el.style.height = '40px';
+    el.style.borderRadius = '50%';
+    el.style.pointerEvents = 'none';
+    el.style.transform = 'translate(-50%, -50%) scale(0)';
+    el.style.background = generateLightPastelColor();
+    el.style.opacity = '0.8';
+    el.style.transition = 'transform 0.5s, opacity 0.5s';
+    document.body.appendChild(el);
+    
+    // 触发动画
+    setTimeout(() => {
+      el.style.transform = 'translate(-50%, -50%) scale(3)';
+      el.style.opacity = '0';
+    }, 10);
+    
+    // 移除元素
+    setTimeout(() => {
+      el.remove();
+    }, 500);
+  });
+}
+
 // 浏览器环境初始化
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
   document.addEventListener('DOMContentLoaded', () => {
@@ -128,6 +246,10 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
     
     // 自动初始化
     initTypewriters();
+    
+    // 初始化鼠标特效
+    initMouseTrail();
+    initMouseClickEffect();
   });
 }
 

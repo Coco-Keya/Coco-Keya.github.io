@@ -252,6 +252,26 @@
     animation: gentle-blink 1.5s infinite;
   }
 
+  /* 鼠标拖尾样式 */
+  .mouse-trail {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    will-change: transform, opacity;
+    mix-blend-mode: multiply;
+  }
+
+  /* 鼠标点击特效样式 */
+  .mouse-click {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    will-change: transform, opacity;
+    mix-blend-mode: multiply;
+  }
+
   @media (max-width: 768px) {
     .header-container {
       flex-direction: column;

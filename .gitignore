@@ -1,5 +1,60 @@
+# 项目特定文件
 /部署.bat
 /测试.bat
 /node-new-article.js
 /README-article.md
+
+# 依赖目录
+/node_modules
+/bower_components
+
+# 构建输出
+/dist
+/build
+/out
+/.next
+/.nuxt
+
+# 缓存文件
+/.cache
+/.npm
+/.eslintcache
+/.stylelintcache
+
+# 编辑器和IDE文件
+/.idea
+/.vscode
+/.vs
+*.sublime-project
+*.sublime-workspace
+
+# 环境变量文件
+/.env
+/.env.local
+/.env.development.local
+/.env.test.local
+/.env.production.local
+
+# 日志文件
+/logs
+/*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 操作系统生成的文件
+.DS_Store
+Thumbs.db
+
+# 测试覆盖率报告
+/coverage
+/.nyc_output
+
+# 临时文件
+/tmp
+/temp
+*.tmp
+*.bak
+*.swp
+
 /.gitignore
