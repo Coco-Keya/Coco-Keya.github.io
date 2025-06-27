@@ -1,7 +1,22 @@
+// 全局设置通过script标签引入，变量名为__workspace
+const workspace = window.__workspace || {
+  meta: { title: '我的网站' },
+  routing: { basePath: '/' },
+  devTools: { debug: true }
+};
+
+// 路径格式化函数
+function formatPath(basePath, relativePath) {
+  return `${basePath.replace(/\/+$/, '')}/${relativePath.replace(/^\/+/, '')}`;
+}
+
 // 动态加载组件
 document.addEventListener('DOMContentLoaded', () => {
+    // 设置页面标题
+    document.title = workspace.meta.title;
+    
     // 加载页头
-    fetch('/src/components/header.html')
+    fetch(formatPath(workspace.routing.basePath, 'src/components/header.html'))
       .then(res => res.text())
       .then(html => {
         document.getElementById('header').innerHTML = html;
@@ -9,18 +24,22 @@ document.addEventListener('DOMContentLoaded', () => {
         initMobileMenu();
       })
       .catch(err => {
-        console.error('加载页头失败:', err);
+        if (workspace.devTools.debug) {
+          console.error('加载页头失败:', err);
+        }
         document.getElementById('header').innerHTML = '<div class="error">导航加载失败</div>';
       });
   
     // 加载页脚
-    fetch('/src/components/footer.html')
+    fetch(formatPath(workspace.routing.basePath, 'src/components/footer.html'))
       .then(res => res.text())
       .then(html => {
         document.getElementById('footer').innerHTML = html;
       })
       .catch(err => {
-        console.error('加载页脚失败:', err);
+        if (workspace.devTools.debug) {
+          console.error('加载页脚失败:', err);
+        }
         document.getElementById('footer').innerHTML = '<div class="error">页脚加载失败</div>';
       });
   });

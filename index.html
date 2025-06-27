@@ -25,33 +25,83 @@
             <a href="/src/pages/about.html" class="btn">了解更多</a>
         </section>
 
-        <section class="features">
-            <div class="card">
-                <i class="fas fa-bolt"></i>
-                <h3>123</h3>
-                <p>456</p>
-            </div>
-            <div class="card">
-                <i class="fas fa-mobile-alt"></i>
-                <h3>响应式设计</h3>
-                <p>适配手机、平板和桌面设备</p>
-            </div>
-            <div class="card">
-                <i class="fas fa-paint-brush"></i>
-                <h3>现代设计</h3>
-                <p>简洁美观的界面设计</p>
-            </div>
+        <section class="features" id="articles-container">
+            <!-- 文章卡片将通过JavaScript动态生成 -->
         </section>
+
+    <!-- 全局配置 -->
+    <script src="/src/config/workspace.js"></script>
+    
+    <!-- 文章数据 -->
+    <script src="/src/essay/essay.js"></script>
+        
+        <script>
+            // 动态加载文章
+            document.addEventListener('DOMContentLoaded', () => {
+                try {
+                    const container = document.getElementById('articles-container');
+                    
+                    // 调试：检查数据加载情况
+                    console.log('文章数据:', window.articles);
+                    
+                    // 检查数据是否加载
+                    if (!window.articles || !Array.isArray(window.articles)) {
+                        console.error('文章数据未正确加载，请检查:',
+                            '1. /src/essay/essay.js路径是否正确',
+                            '2. essay.js是否正确定义window.articles');
+                        return;
+                    }
+                    
+                    // 清空容器避免重复
+                    container.innerHTML = '';
+                    
+                    // 生成文章卡片
+                    window.articles.forEach(article => {
+                        const card = document.createElement('a');
+                        card.href = `/src/essay/article_template.html?md=${article.filename}&id=${articles.indexOf(article)}`;
+                        card.className = 'card';
+                        card.style.background = article.colorClass || '';
+                        card.innerHTML = `
+                            <div class="card-content" data-filename="${article.filename}">
+                                <h3>${article.title}</h3>
+                                <p>${article.description}</p>
+                            </div>
+                        `;
+                        container.appendChild(card);
+                    });
+                    
+                } catch (error) {
+                    console.error('加载文章失败:', error);
+                }
+            });
+        </script>
 
     </main>
 
     <!-- 动态插入页脚 -->
     <div id="footer"></div>
 
-    <!-- 主JS脚本 -->
-    <script src="/src/scripts/main.js"></script>
-    <!-- 可选功能脚本 -->
-    <script src="/src/scripts/optional.js"></script>
+        <!-- 链接调试与跳转 -->
+        <script>
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.card')) {
+                    const card = e.target.closest('.card');
+                    // 仅记录不阻止跳转
+                    console.group('文章跳转调试');
+                    console.log('目标URL:', card.href);
+                    console.log('文件状态:', 
+                        fetch(card.href)
+                            .then(res => res.statusText)
+                            .catch(e => e.message));
+                    console.groupEnd();
+                }
+            });
+        </script>
+
+        <!-- 主JS脚本 -->
+        <script src="/src/scripts/main.js"></script>
+        <!-- 可选功能脚本 -->
+        <script src="/src/scripts/optional.js"></script>
 </body>
 
 </html>

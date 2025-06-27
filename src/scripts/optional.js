@@ -1,12 +1,19 @@
+// 使用全局配置，变量名为__workspace
+const workspaceConfig = typeof window !== 'undefined' 
+  ? window.__workspace || { theme: { primaryColor: '#3498db' } }
+  : { theme: { primaryColor: '#3498db' } };
+
 /**
- * 打字机动画功能
- * 使用方法：
- * 1. 在元素上添加data-typewriter属性启用效果
- * 2. 可选参数：
- *    - data-speed: 打字速度(毫秒)，默认100
- *    - data-delay: 动画延迟(毫秒)，默认0
- *    - data-cursor: 是否显示光标，默认true
- *    - data-blink: 是否在打字完成后闪烁，默认false
+ * 打字机动画效果模块
+ * @module Typewriter
+ * @description 提供文字逐个显示的打字机动画效果
+ * 
+ * @example
+ * // HTML中使用
+ * <div data-typewriter data-speed="60" data-delay="500">要显示的文字</div>
+ * 
+ * // JavaScript中使用
+ * typewriter.animate(element, speed, delay, showCursor, showBlink);
  */
 
 // 打字机动画效果
@@ -25,7 +32,7 @@ function typeWriter(element, speed = 60, delay = 0, showCursor = true, showBlink
   // 初始化样式
   if (showCursor) {
     element.style.overflow = 'hidden';
-    element.style.borderRight = '3px solid var(--primary-color)';
+    element.style.borderRight = `3px solid ${workspaceConfig.theme.primaryColor}`;
     element.style.whiteSpace = 'nowrap';
   }
   
@@ -83,14 +90,52 @@ function initTypewriters() {
   };
 }
 
-// 自动初始化
-document.addEventListener('DOMContentLoaded', () => {
-  // 导出初始化函数以便手动调用
-  window.typewriter = {
-    init: initTypewriters,
-    animate: typeWriter
+/**
+ * 生成带有透明度变化的渐变色
+ * 返回CSS渐变字符串
+ */
+function generateLightPastelColor() {
+    // 生成基准色 (80-255)
+    const base = Math.floor(Math.random() * 176) + 80;
+    
+    // 生成两个差值 (0-199)
+    const diff1 = Math.floor(Math.random() * 200);
+    const diff2 = Math.floor(Math.random() * 200);
+    
+    // 生成RGB值
+    const [r, g, b] = [
+      base,
+      base + diff1,
+      base + diff2
+    ].map(val => Math.min(255, Math.max(80, val)));
+    
+    // 生成透明度变化 (0.5-1.0)
+    const alpha1 = (Math.random() * 0.5 + 0.5).toFixed(2);
+    const alpha2 = (Math.random() * 0.5 + 0.5).toFixed(2);
+    
+    return `linear-gradient(135deg, rgba(${r}, ${g}, ${b}, ${alpha1}), rgba(${r}, ${g}, ${b}, ${alpha2}))`;
+}
+
+// 浏览器环境初始化
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', () => {
+    // 导出初始化函数以便手动调用
+    window.typewriter = {
+      init: initTypewriters,
+      animate: typeWriter
+    };
+    window.generateLightPastelColor = generateLightPastelColor;
+    
+    // 自动初始化
+    initTypewriters();
+  });
+}
+
+// Node.js模块导出
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    generateLightPastelColor,
+    typeWriter,
+    initTypewriters
   };
-  
-  // 自动初始化
-  initTypewriters();
-});
+}

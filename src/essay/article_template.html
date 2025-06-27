@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章标题</title>
+    <meta name="description" content="文章摘要">
+    <link rel="icon" href="/public/img/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/src/assets/styles/base.css">
+    <link rel="stylesheet" href="/src/assets/styles/layout.css">
+    <!-- 引入字体图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- 引入marked.js -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        /* 设置标题的前后间距，前间距大于后间距 */
+        .content h1, .content h2, .content h3, .content h4, .content h5, .content h6 {
+            margin-top: 1em;
+            margin-bottom: 0.8em;
+        }
+        
+    </style>
+</head>
+<body>
+    <div id="header"></div>
+    
+    <main class="container">
+        <article>
+            <h1 id="article-title">文章标题</h1>
+            <p class="meta">发布日期：<time id="article-date" datetime="YYYY-MM-DD">加载中...</time></p>
+            <div id="article-content" class="content">
+                <!-- Markdown内容将在这里动态渲染 -->
+            </div>
+        </article>
+    </main>
+
+    <div id="footer"></div>
+    
+    <script src="/src/scripts/main.js"></script>
+    <script>
+        // 统一获取URL参数
+        const urlParams = new URLSearchParams(window.location.search);
+        const mdFile = urlParams.get('md') || 'default.md';
+        const articleId = urlParams.get('id');
+        
+        // 加载并渲染Markdown
+        fetch(`/src/essay/${mdFile}`)
+            .then(response => response.text())
+            .then(markdown => {
+                // 解析Markdown
+                // 移除Markdown中的第一个标题（通常是 # 开头的第一行）
+                const processedMarkdown = markdown.replace(/^#\s+.+?\n/m, '');
+                document.getElementById('article-content').innerHTML = marked.parse(processedMarkdown);
+                
+                // 从Markdown中提取标题（第一行#标题）
+                const titleMatch = markdown.match(/^#\s*(.+)/m);
+                if (titleMatch) {
+                    document.title = titleMatch[1] + ' - 来自KEYA';
+                    document.getElementById('article-title').textContent = titleMatch[1];
+                }
+                
+                // 设置发布日期
+                const now = new Date();
+                const formattedDate = `${now.getFullYear()}年${String(now.getMonth() + 1).padStart(2, '0')}月${String(now.getDate()).padStart(2, '0')}日 ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                document.getElementById('article-date').textContent = formattedDate;
+                document.getElementById('article-date').setAttribute('datetime', now.toISOString());
+                
+                // 设置标题颜色
+                function applyRandomColorToHeadings() {
+                    // 如果不存在颜色生成函数，创建一个默认的随机渐变颜色函数
+                    if (!window.generateLightPastelColor) {
+                        window.generateLightPastelColor = function() {
+                            // 生成柔和的随机颜色值
+                            const getRandomPastel = () => Math.floor(Math.random() * 127 + 128).toString(16).padStart(2, '0');
+                            const color1 = `#${getRandomPastel()}${getRandomPastel()}${getRandomPastel()}`;
+                            const color2 = `#${getRandomPastel()}${getRandomPastel()}${getRandomPastel()}`;
+                            return `linear-gradient(45deg, ${color1} 0%, ${color2} 100%)`;
+                        };
+                    }
+
+                    // 生成随机渐变颜色
+                    const randomColor = window.generateLightPastelColor();
+
+                    // 设置文章主标题颜色
+                    const title = document.getElementById('article-title');
+                    if (title) {
+                        title.style.background = randomColor;
+                        title.style.webkitBackgroundClip = 'text';
+                        title.style.backgroundClip = 'text';
+                        title.style.color = 'transparent';
+                    }
+
+                    // 设置内容中所有标题颜色
+                    const headings = document.querySelectorAll('.content h1, .content h2, .content h3, .content h4, .content h5, .content h6');
+                    headings.forEach(heading => {
+                        heading.style.background = randomColor;
+                        heading.style.webkitBackgroundClip = 'text';
+                        heading.style.backgroundClip = 'text';
+                        heading.style.color = 'transparent';
+                        heading.style.display = 'inline-block';
+                    });
+                }
+
+                // 立即应用颜色
+                applyRandomColorToHeadings();
+            })
+            .catch(error => {
+                console.error('加载Markdown失败:', error);
+                document.getElementById('article-content').innerHTML = '<p>加载文章内容失败，请稍后再试。</p>';
+            });
+    </script>
+</body>
+</html>
