@@ -18,6 +18,12 @@
             margin-top: 1em;
             margin-bottom: 0.8em;
         }
+        /* 为所有标题添加黑色描边 */
+        #article-title,
+        .content h1, .content h2, .content h3, .content h4, .content h5, .content h6 {
+            -webkit-text-stroke: 0.5px black;
+            font-weight: bold;
+        }
         
     </style>
 </head>
@@ -27,7 +33,7 @@
     <main class="container">
         <article>
             <h1 id="article-title">文章标题</h1>
-            <p class="meta">发布日期：<time id="article-date" datetime="YYYY-MM-DD">加载中...</time></p>
+            <p class="meta">更新日期：<time id="article-date" datetime="YYYY-MM-DD">加载中...</time></p>
             <div id="article-content" class="content">
                 <!-- Markdown内容将在这里动态渲染 -->
             </div>

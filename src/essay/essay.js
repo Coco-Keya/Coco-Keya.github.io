@@ -10,6 +10,13 @@ const articles = [
         filename: "20250627-1.md",
         date: "2025-06-27",
         colorClass: "linear-gradient(135deg, rgba(171, 195, 255, 0.98), rgba(171, 195, 255, 0.85))"
+    },
+    {
+        title: "突发奇想",
+        description: "诗兴大发！！（不是）ヾ(≧▽≦*)o",
+        filename: "20250701-突发奇想.md",
+        date: "2025-07-01",
+        colorClass: "linear-gradient(135deg, rgba(227, 255, 255, 0.79), rgba(227, 255, 255, 0.80))"
     }];
 
 // 导出数据
