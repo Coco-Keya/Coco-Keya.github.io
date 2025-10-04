@@ -17,6 +17,13 @@ const articles = [
         filename: "20250701-突发奇想.md",
         date: "2025-07-01",
         colorClass: "linear-gradient(135deg, rgba(227, 255, 255, 0.79), rgba(227, 255, 255, 0.80))"
+    },
+    {
+        title: "关于世界观的设定",
+        description: "我设想了一种奇幻世界观，不知道怎么样",
+        filename: "20251004-关于世界观的设定.md",
+        date: "2025-10-04",
+        colorClass: "linear-gradient(135deg, rgba(236, 255, 255, 0.89), rgba(236, 255, 255, 0.97))"
     }];
 
 // 导出数据
