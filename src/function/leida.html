@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>雷达图</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-gradient-start: #0f0c29;
+            --bg-gradient-end: #302b63;
+            --glass-bg: rgba(255,255,255,.08);
+            --glass-border: rgba(255,255,255,.15);
+            --text-primary: #e5e7eb;
+            --text-secondary: #9ca3af;
+            --accent: #818cf8;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end)) fixed;
+            color: var(--text-primary);
+            font-family: Inter, system-ui, sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 20px;
+        }
+        
+        .radar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .radar-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .radar-main {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .radar-controls {
+            width: 300px;
+        }
+        
+        .radar-canvas-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #radar {
+            max-width: 100%;
+            max-height: 80vh;
+        }
+        
+        input[type=range] {
+            width: 100%;
+            background: rgba(255,255,255,.2);
+            outline: none;
+            cursor: pointer;
+        }
+        
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 0 8px var(--accent);
+        }
+        
+        details {
+            margin-bottom: 15px;
+        }
+        
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        #metricInputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="glass">
+        <div class="radar-header">
+            <h1><i class="fa-solid fa-chart-radar"></i> 雷达图</h1>
+            <div class="radar-actions">
+                <button onclick="resetAll()" class="glass">重置全部</button>
+            </div>
+        </div>
+        
+        <div class="radar-main">
+            <div class="radar-controls glass">
+                <details open>
+                    <summary>指标数值</summary>
+                    <div id="metricInputs"></div>
+                </details>
+                
+                <details open>
+                    <summary>雷达图样式</summary>
+                    <div>
+                        <label>网格类型
+                            <select id="gridStyle">
+                                <option value="hexagon">六边形</option>
+                                <option value="circle">圆形</option>
+                                <option value="none">无网格</option>
+                            </select>
+                        </label>
+                        
+                        <label>网格层数
+                            <input type="range" id="gridLevels" min="3" max="8" value="5">
+                        </label>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <label>网格颜色
+                                <input type="color" id="gridColor" value="#cbd5e1">
+                            </label>
+                            <label>填充色
+                                <input type="color" id="fillColor" value="#818cf8">
+                            </label>
+                            <label>渐变终止色
+                                <input type="color" id="gradientEndColor" value="#818cf8">
+                            </label>
+                            <label>边框色
+                                <input type="color" id="borderColor" value="#a5b4fc">
+                            </label>
+                        </div>
+                        
+                        <label>渐变速度
+                            <input type="range" id="gradientSpeed" min="0" max="100" value="100">
+                        </label>
+                        
+                        <label>填充透明度
+                            <input type="range" id="fillOpacity" min="0" max="100" value="35">
+                        </label>
+                        
+                        <label>
+                            <input type="checkbox" id="roundPoint" checked> 圆角数据点
+                        </label>
+                        
+                        <label>
+                            <input type="checkbox" id="glow" checked> 发光效果
+                        </label>
+                        
+                        <label>字体颜色
+                            <input type="color" id="fontColor" value="#000000">
+                        </label>
+                    </div>
+                </details>
+            </div>
+            
+            <div class="radar-canvas-container">
+                <canvas id="radar"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 粒子背景
+        const pCanvas = document.createElement('canvas');
+        pCanvas.style.position = 'fixed';
+        pCanvas.style.top = '0';
+        pCanvas.style.left = '0';
+        pCanvas.style.zIndex = '-10';
+        pCanvas.style.width = '100%';
+        pCanvas.style.height = '100%';
+        document.body.prepend(pCanvas);
+        
+        const pCtx = pCanvas.getContext('2d');
+        const particles = Array.from({length: 60}, () => ({
+            x: Math.random() * innerWidth,
+            y: Math.random() * innerHeight,
+            r: Math.random() * 1.5 + 1,
+            dx: Math.random() * 0.4 - 0.2,
+            dy: Math.random() * 0.4 - 0.2
+        }));
+
+        function resizeParticles() {
+            pCanvas.width = innerWidth;
+            pCanvas.height = innerHeight;
+        }
+
+        function animateParticles() {
+            pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+            particles.forEach(p => {
+                p.x += p.dx;
+                p.y += p.dy;
+                if (p.x < 0 || p.x > pCanvas.width) p.dx *= -1;
+                if (p.y < 0 || p.y > pCanvas.height) p.dy *= -1;
+                pCtx.beginPath();
+                pCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                pCtx.fillStyle = 'rgba(255,255,255,.15)';
+                pCtx.fill();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+
+        // 配置 & 本地存储
+        const STORAGE = 'radarBeauty';
+        const config = JSON.parse(localStorage.getItem(STORAGE)) || {
+            labels: ['母系', '女友', '女儿', '妹妹', '宠物', 'xp'],
+            gridStyle: 'hexagon',
+            gridLevels: 5,
+            gridColor: '#cbd5e1',
+            fillColor: '#818cf8',
+            gradientEndColor: '#818cf8',
+            gradientSpeed: 100,
+            borderColor: '#a5b4fc',
+            fillOpacity: 35,
+            roundPoint: true,
+            glow: true,
+            fontSize: 12,
+            fontColor: '#000000',
+            animIn: 'clockwise',
+            animDur: 1200
+        };
+
+        function saveConfig() {
+            localStorage.setItem(STORAGE, JSON.stringify(config));
+        }
+
+        function bindControls() {
+            Object.keys(config).forEach(key => {
+                const el = document.getElementById(key);
+                if (!el) return;
+                if (el.type === 'checkbox') el.checked = config[key];
+                else el.value = config[key];
+                el.addEventListener('input', () => {
+                    config[key] = el.type === 'checkbox' ? el.checked : el.value;
+                    saveConfig();
+                    draw();
+                });
+            });
+        }
+
+        // 指标输入
+        function buildMetrics() {
+            const wrap = document.getElementById('metricInputs');
+            wrap.innerHTML = '';
+            config.labels.forEach((l, i) => {
+                const inp = document.createElement('input');
+                inp.type = 'number';
+                inp.id = 'metric' + (i + 1);
+                inp.value = 4.5;
+                inp.step = 0.5;
+                inp.min = 0;
+                inp.max = 5;
+                inp.addEventListener('input', draw);
+                
+                const lbl = document.createElement('label');
+                lbl.textContent = l;
+                lbl.appendChild(inp);
+                wrap.appendChild(lbl);
+            });
+        }
+
+        // 绘图核心
+        const canvas = document.getElementById('radar');
+        const ctx = canvas.getContext('2d');
+        
+        function resize() {
+            const container = document.querySelector('.radar-canvas-container');
+            const size = Math.min(container.clientWidth, container.clientHeight);
+            canvas.width = size;
+            canvas.height = size;
+        }
+
+        function draw() {
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const r = cx * 0.8;
+            const max = config.labels.length;
+            const step = Math.PI * 2 / max;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制网格
+            ctx.strokeStyle = config.gridColor;
+            ctx.lineWidth = 1;
+            
+            if (config.gridStyle !== 'none') {
+                if (config.gridStyle === 'hexagon') {
+                    for (let lv = 1; lv <= config.gridLevels; lv++) {
+                        const rad = r * (lv / config.gridLevels);
+                        ctx.beginPath();
+                        for (let i = 0; i < max; i++) {
+                            const a = i * step - Math.PI / 2;
+                            const x = cx + rad * Math.cos(a);
+                            const y = cy + rad * Math.sin(a);
+                            if (i === 0) ctx.moveTo(x, y);
+                            else ctx.lineTo(x, y);
+                        }
+                        ctx.closePath();
+                        ctx.stroke();
+                    }
+                    
+                    for (let i = 0; i < max; i++) {
+                        const a = i * step - Math.PI / 2;
+                        ctx.beginPath();
+                        ctx.moveTo(cx, cy);
+                        ctx.lineTo(cx + r * Math.cos(a), cy + r * Math.sin(a));
+                        ctx.stroke();
+                    }
+                } else if (config.gridStyle === 'circle') {
+                    for (let lv = 1; lv <= config.gridLevels; lv++) {
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, r * (lv / config.gridLevels), 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+                    
+                    for (let i = 0; i < max; i++) {
+                        const a = i * step - Math.PI / 2;
+                        ctx.beginPath();
+                        ctx.moveTo(cx, cy);
+                        ctx.lineTo(cx + r * Math.cos(a), cy + r * Math.sin(a));
+                        ctx.stroke();
+                    }
+                }
+            }
+            
+            // 获取数据值
+            const values = config.labels.map((_, i) => {
+                const el = document.getElementById('metric' + (i + 1));
+                return el ? parseFloat(el.value) || 0 : 0;
+            });
+            
+            // 绘制数据多边形
+            ctx.beginPath();
+            for (let i = 0; i < max; i++) {
+                const v = values[i] / 5;
+                const rad = r * v;
+                const a = i * step - Math.PI / 2;
+                const x = cx + rad * Math.cos(a);
+                const y = cy + rad * Math.sin(a);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            
+            // 设置渐变填充
+            const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+            const speed = config.gradientSpeed / 100;
+            const opacity = config.fillOpacity / 100;
+            gradient.addColorStop(0, hexToRgba(config.fillColor, opacity));
+            gradient.addColorStop(1 - speed, hexToRgba(config.fillColor, opacity));
+            gradient.addColorStop(1, hexToRgba(config.gradientEndColor, opacity));
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            
+            // 绘制边框
+            if (config.glow) {
+                ctx.shadowBlur = 25;
+                ctx.shadowColor = config.borderColor;
+            }
+            ctx.strokeStyle = config.borderColor;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+            
+            // 绘制数据点
+            values.forEach((v, i) => {
+                const rad = r * (v / 5);
+                const a = i * step - Math.PI / 2;
+                const x = cx + rad * Math.cos(a);
+                const y = cy + rad * Math.sin(a);
+                ctx.beginPath();
+                ctx.arc(x, y, config.roundPoint ? 5 : 3, 0, Math.PI * 2);
+                ctx.fillStyle = '#fff';
+                ctx.fill();
+                ctx.strokeStyle = config.borderColor;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            });
+            
+            // 绘制数值标签
+            ctx.save();
+            ctx.font = '20px sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = 'rgba(0,0,0,0.6)';
+            ctx.shadowBlur = 3;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            const OFFSET_X = 12;
+            const OFFSET_Y = 12;
+            
+            values.forEach((v, i) => {
+                const rad = r * (v / 5);
+                const a = i * step - Math.PI / 2;
+                const defX = cx + rad * Math.cos(a);
+                const defY = cy + rad * Math.sin(a);
+                const pos = getValPos(i, defX + OFFSET_X, defY + OFFSET_Y);
+                ctx.fillText(v.toFixed(1), pos.x, pos.y);
+            });
+            ctx.restore();
+            
+            // 绘制指标名称
+            ctx.fillStyle = config.fontColor;
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 3;
+            ctx.font = `20px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            config.labels.forEach((l, i) => {
+                const a = i * step - Math.PI / 2;
+                const x = cx + (r + 20) * Math.cos(a);
+                const y = cy + (r + 20) * Math.sin(a);
+                ctx.strokeText(l, x, y);
+                ctx.fillText(l, x, y);
+            });
+        }
+        
+        // 工具函数
+        function hexToRgba(hex, a) {
+            hex = hex.replace('#', '');
+            const r = parseInt(hex.substr(0, 2), 16);
+            const g = parseInt(hex.substr(2, 2), 16);
+            const b = parseInt(hex.substr(4, 2), 16);
+            return `rgba(${r},${g},${b},${a})`;
+        }
+        
+        // 数值拖拽
+        const MOVE_DEADBAND = 6;
+        let valuePos = JSON.parse(localStorage.getItem('radarValuePos') || '{}');
+        
+        function getValPos(i, defX, defY) {
+            return valuePos[i] || {x: defX, y: defY};
+        }
+        
+        function setValPos(i, x, y) {
+            valuePos[i] = {x, y};
+            localStorage.setItem('radarValuePos', JSON.stringify(valuePos));
+        }
+        
+        let dragTarget = null;
+        let offsetX = 0;
+        let offsetY = 0;
+        
+        canvas.addEventListener('mousedown', e => {
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const r = cx * 0.8;
+            const max = config.labels.length;
+            const step = Math.PI * 2 / max;
+            
+            const values = config.labels.map((_, i) => 
+                parseFloat(document.getElementById('metric' + (i + 1))?.value || 0)
+            );
+            
+            for (let i = 0; i < max; i++) {
+                const v = values[i];
+                const rad = r * (v / 5);
+                const a = i * step - Math.PI / 2;
+                const defX = cx + rad * Math.cos(a);
+                const defY = cy + rad * Math.sin(a);
+                const pos = getValPos(i, defX + 12, defY + 12);
+                
+                if (Math.hypot(mx - pos.x, my - pos.y) <= MOVE_DEADBAND) {
+                    dragTarget = i;
+                    offsetX = mx - pos.x;
+                    offsetY = my - pos.y;
+                    canvas.style.cursor = 'grabbing';
+                    break;
+                }
+            }
+        });
+        
+        addEventListener('mousemove', e => {
+            if (dragTarget === null) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left - offsetX;
+            const y = e.clientY - rect.top - offsetY;
+            
+            setValPos(dragTarget, x, y);
+            draw();
+        });
+        
+        addEventListener('mouseup', () => {
+            if (dragTarget !== null) {
+                dragTarget = null;
+                canvas.style.cursor = 'grab';
+            }
+        });
+        
+        canvas.addEventListener('mousemove', e => {
+            if (dragTarget !== null) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const r = cx * 0.8;
+            const max = config.labels.length;
+            const step = Math.PI * 2 / max;
+            
+            const values = config.labels.map((_, i) => 
+                parseFloat(document.getElementById('metric' + (i + 1))?.value || 0)
+            );
+            
+            let hit = false;
+            for (let i = 0; i < max; i++) {
+                const v = values[i];
+                const rad = r * (v / 5);
+                const a = i * step - Math.PI / 2;
+                const defX = cx + rad * Math.cos(a);
+                const defY = cy + rad * Math.sin(a);
+                const pos = getValPos(i, defX + 12, defY + 12);
+                
+                if (Math.hypot(mx - pos.x, my - pos.y) <= MOVE_DEADBAND) {
+                    hit = true;
+                    break;
+                }
+            }
+            
+            canvas.style.cursor = hit ? 'grab' : 'default';
+        });
+        
+        // 导出 / 重置
+
+        
+        function resetAll() {
+            localStorage.removeItem(STORAGE);
+            localStorage.removeItem('radarValuePos');
+            location.reload();
+        }
+        
+        // 初始化
+        addEventListener('resize', () => {
+            resizeParticles();
+            resize();
+            draw();
+        });
+        
+        resizeParticles();
+        resize();
+        bindControls();
+        buildMetrics();
+        animateParticles();
+        draw();
+    </script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小工具 - 柯迓的网站</title>
+    <link rel="icon" href="/public/img/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/src/assets/styles/base.css">
+    <link rel="stylesheet" href="/src/assets/styles/layout.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .tools-container {
+            display: flex;
+            min-height: calc(100vh - 120px);
+        }
+        
+        .tools-sidebar {
+            width: 250px;
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-right: 1px solid #e1e1e1;
+            position: fixed;
+            left: -250px;
+            top: 0;
+            bottom: 0;
+            transition: left 0.3s ease;
+            z-index: 100;
+        }
+        
+        .tools-sidebar.show {
+            left: 0;
+        }
+        
+        .tools-content {
+            flex: 1;
+            padding: 20px;
+            transition: margin-left 0.3s ease;
+        }
+        
+        .tools-sidebar.show ~ .tools-content {
+            margin-left: 250px;
+        }
+        
+        .tool-item {
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .tool-item:hover {
+            background-color: #e9ecef;
+        }
+        
+        .tool-item.active {
+            background-color: #dee2e6;
+            font-weight: bold;
+        }
+        
+        .tool-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            min-height: 600px;
+        }
+    </style>
+</head>
+<body>
+    <div id="header"></div>
+
+    <main class="container tools-container">
+        <div class="tools-sidebar">
+            <h2>工具列表</h2>
+            <div class="tool-item active" data-tool="radar">雷达图</div>
+            <!-- 可以添加更多工具选项 -->
+        </div>
+        
+        <div class="tools-content">
+            <iframe id="tool-frame" class="tool-iframe" src="/src/function/leida.html" sandbox="allow-scripts allow-same-origin"></iframe>
+        </div>
+    </main>
+
+    <div id="footer"></div>
+    
+    <script>
+        // 工具切换逻辑
+        document.querySelectorAll('.tool-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.tool-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+                
+                // 根据选择的工具更新iframe内容
+                const tool = this.getAttribute('data-tool');
+                const iframe = document.getElementById('tool-frame');
+                
+                switch(tool) {
+                    case 'radar':
+                        iframe.src = '/src/function/leida.html';
+                        break;
+                    // 可以添加更多工具case
+                }
+            });
+        });
+
+        // 工具列表显示/隐藏控制
+        const toggleSidebarBtn = document.createElement('button');
+        toggleSidebarBtn.className = 'glass';
+        toggleSidebarBtn.innerHTML = '<i class="fa-solid fa-bars"></i>';
+        toggleSidebarBtn.style.position = 'fixed';
+        toggleSidebarBtn.style.left = '10px';
+        toggleSidebarBtn.style.top = '50%';
+        toggleSidebarBtn.style.transform = 'translateY(-50%)';
+        toggleSidebarBtn.style.zIndex = '1000';
+        
+        document.body.appendChild(toggleSidebarBtn);
+        
+        toggleSidebarBtn.addEventListener('click', () => {
+            document.querySelector('.tools-sidebar').classList.toggle('show');
+        });
+    </script>
+    
+    <script src="/src/scripts/main.js"></script>
+</body>
+</html>
